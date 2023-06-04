@@ -1,22 +1,24 @@
+# frozen_string_literal: true
+
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
 require 'date'
 
-week_names = {0 => "Sunday", 1 => "Monday",2 => "Tuesday", 3 => "Wednesday",
-              4 => "Thursday", 5=> "Friday", 6 =>"Saturday"}
+week_names = { 0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday',
+               4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday' }
 def clean_zipcode(zipcode)
-  zipcode.to_s.rjust(5,"0")[0..4]
+  zipcode.to_s.rjust(5, '0')[0..4]
 end
 
 def clean_phone_number(phone_number)
-  phone_number.gsub!(/\D/,'')
+  phone_number.gsub!(/\D/, '')
   if phone_number.length == 10
     phone_number
-  elsif phone_number.length == 11 && phone_number[0] == "1"
+  elsif phone_number.length == 11 && phone_number[0] == '1'
     phone_number[1..10]
   else
-    "Bad number"
+    'Bad number'
   end
 end
 
@@ -28,14 +30,14 @@ def legislators_by_zipcode(zip)
     civic_info.representative_info_by_address(
       address: zip,
       levels: 'country',
-      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+      roles: %w[legislatorUpperBody legislatorLowerBody]
     ).officials
-  rescue
+  rescue StandardError
     'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
   end
 end
 
-def save_thank_you_letter(id,form_letter)
+def save_thank_you_letter(id, form_letter)
   Dir.mkdir('output') unless Dir.exist?('output')
 
   filename = "output/thanks_#{id}.html"
@@ -65,7 +67,7 @@ contents.each do |row|
 
   phone_number = clean_phone_number(row[:homephone])
 
-  time = DateTime.strptime(row[:regdate], "%m/%d/%y %H:%M")
+  time = DateTime.strptime(row[:regdate], '%m/%d/%y %H:%M')
   hourly_activity[time.hour] += 1
   daily_activity[time.wday] += 1
 
@@ -79,9 +81,7 @@ end
 def get_index_with_largest_val(arr)
   res = 0
   arr.each_with_index do |curr, index|
-    if arr[res] < curr
-      res = index
-    end
+    res = index if arr[res] < curr
   end
   res
 end
